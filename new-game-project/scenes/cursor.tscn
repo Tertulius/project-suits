@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://b5dsaebbf3amd"]
+
+[ext_resource type="Script" uid="uid://c7khsqf6csxko" path="res://scripts/cursor_controller.gd" id="1_1eco6"]
+[ext_resource type="Texture2D" uid="uid://qwjj5y5n2atr" path="res://assets/cursor.png" id="1_s0nli"]
+
+[node name="Cursor" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.5)
+self_modulate = Color(1, 1, 1, 0.5)
+texture = ExtResource("1_s0nli")
+centered = false
+
+[node name="CursorController" type="Node" parent="."]
+script = ExtResource("1_1eco6")

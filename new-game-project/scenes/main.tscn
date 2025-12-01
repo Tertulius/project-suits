@@ -1,0 +1,31 @@
+[gd_scene load_steps=7 format=3 uid="uid://155xx7s6y6ta"]
+
+[ext_resource type="Script" uid="uid://d05rphe42pwov" path="res://scripts/main.gd" id="1_sugp2"]
+[ext_resource type="Script" uid="uid://dhx5mllhp5vap" path="res://scripts/unit_manager.gd" id="2_jyhfs"]
+[ext_resource type="Script" uid="uid://ey0lfjjlpl42" path="res://scripts/state_display.gd" id="3_tbgi4"]
+[ext_resource type="PackedScene" uid="uid://df0eq75qtutur" path="res://scenes/grid.tscn" id="4_tefeu"]
+[ext_resource type="PackedScene" uid="uid://b5dsaebbf3amd" path="res://scenes/cursor.tscn" id="5_o6xl0"]
+[ext_resource type="PackedScene" uid="uid://bju2jqmppdttm" path="res://scenes/unit.tscn" id="6_tipki"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_sugp2")
+
+[node name="GameManager" type="Node2D" parent="."]
+
+[node name="UnitManager" type="Node" parent="GameManager"]
+script = ExtResource("2_jyhfs")
+
+[node name="StateDisplay" type="Label" parent="."]
+modulate = Color(0.2920013, 0.7375741, 0, 1)
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 163.0
+offset_bottom = 33.0
+text = "State:PLAYER_TURN"
+script = ExtResource("3_tbgi4")
+
+[node name="Grid" parent="." instance=ExtResource("4_tefeu")]
+
+[node name="Cursor" parent="." instance=ExtResource("5_o6xl0")]
+
+[node name="Units" parent="." instance=ExtResource("6_tipki")]

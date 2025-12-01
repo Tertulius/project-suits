@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://bju2jqmppdttm"]
+
+[ext_resource type="Texture2D" uid="uid://bdj0khtq1vv2o" path="res://assets/unit_player.png" id="1_1jvru"]
+[ext_resource type="Script" uid="uid://my8gllpixbml" path="res://scripts/unit.gd" id="1_o7ajc"]
+[ext_resource type="Texture2D" uid="uid://0a0fpjefmc1j" path="res://assets/selection_ring.png" id="2_gic7v"]
+
+[node name="Unit" type="Node2D"]
+script = ExtResource("1_o7ajc")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_1jvru")
+
+[node name="SelectionIndicator" type="Sprite2D" parent="."]
+visible = false
+modulate = Color(1, 1, 0, 1)
+scale = Vector2(1.2, 1.2)
+texture = ExtResource("2_gic7v")
