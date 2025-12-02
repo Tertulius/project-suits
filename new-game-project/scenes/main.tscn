@@ -28,4 +28,4 @@ script = ExtResource("3_tbgi4")
 
 [node name="Cursor" parent="." instance=ExtResource("5_o6xl0")]
 
-[node name="Units" parent="." instance=ExtResource("6_tipki")]
+[node name="Units" type="Node2D" parent="."]

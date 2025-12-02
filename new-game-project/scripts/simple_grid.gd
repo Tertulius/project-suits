@@ -18,10 +18,9 @@ func draw_simple_grid():
 	# Create alternating colored squares
 	for x in grid_size.x:
 		for y in grid_size.y:
-			# Create a ColorRect (colored rectangle)
 			var square = ColorRect.new()
 			square.size = cell_size
-			square.position = Vector2(x, y) * cell_size + cell_size * 0.5
+			square.position = _cell_top_left(Vector2i(x, y))
 			
 			# Alternate colors: light gray and dark gray
 			if (x + y) % 2 == 0:
@@ -29,10 +28,13 @@ func draw_simple_grid():
 			else:
 				square.color = Color(0.6, 0.6, 0.6)  # Dark gray
 			
-			# Add to scene
 			add_child(square)
 	
 	print("Drawn grid: ", grid_size, " cells")
+
+func _cell_top_left(cell: Vector2i) -> Vector2:
+	# ColorRect positions are top-left; convert from center coords
+	return GridManager.grid_to_world(cell) - GridManager.cell_size * 0.5
 
 # Show where unit can move (green highlights)
 func highlight_movement_range(cells: Array):  # CHANGED
@@ -41,7 +43,7 @@ func highlight_movement_range(cells: Array):  # CHANGED
 	for cell in cells:
 		var highlight = ColorRect.new()
 		highlight.size = GridManager.cell_size
-		highlight.position = Vector2(cell) * GridManager.cell_size + GridManager.cell_size * 0.5
+		highlight.position = _cell_top_left(cell)
 		highlight.color = Color(0, 1, 0, 0.3)  # Semi-transparent green
 		add_child(highlight)
 		movement_highlights.append(highlight)
@@ -57,7 +59,7 @@ func draw_path(path_cells: Array):  # CHANGED
 		var cell = path_cells[i]
 		var path_cell = ColorRect.new()
 		path_cell.size = GridManager.cell_size
-		path_cell.position = Vector2(cell) * GridManager.cell_size + GridManager.cell_size * 0.5
+		path_cell.position = _cell_top_left(cell)
 		path_cell.color = Color(0, 0, 1, 0.5)  # Semi-transparent blue
 		add_child(path_cell)
 		path_highlights.append(path_cell)

@@ -129,6 +129,9 @@ func _on_unit_movement_finished():
 	# For Fire Emblem style, after moving you can still act (attack, wait, etc.)
 	# For MVP, we'll deselect the unit after moving
 	deselect_current_unit()
+	
+	# End player phase and start enemy phase
+	game_state.start_enemy_turn()
 
 # Get all units on a specific team
 func get_units_by_team(team_id: int):
@@ -137,3 +140,66 @@ func get_units_by_team(team_id: int):
 		if unit.team == team_id:
 			team_units.append(unit)
 	return team_units
+
+# Move a unit to a position (for AI use)
+func move_unit_to(unit, target_pos: Vector2i) -> bool:
+	if not unit:
+		return false
+	
+	# Check if another unit is at the target position
+	var unit_at_target = get_unit_at_position(target_pos)
+	if unit_at_target and unit_at_target != unit:
+		return false
+	
+	# Get path to target
+	var path = GridManager.get_grid_path(unit.grid_position, target_pos)
+	if path.size() == 0:
+		return false
+	
+	# Move unit along path
+	unit.move_along_path(path)
+	
+	print("AI unit moving to ", target_pos, " via ", path.size(), " steps")
+	return true
+
+# Find the closest player unit to an enemy unit
+func find_closest_player_unit(enemy_unit) -> Node:
+	var player_units = get_units_by_team(0)  # Team 0 is player
+	if player_units.size() == 0:
+		return null
+	
+	var closest_unit = null
+	var closest_distance = INF
+	
+	for player_unit in player_units:
+		var distance = abs(player_unit.grid_position.x - enemy_unit.grid_position.x) + \
+		               abs(player_unit.grid_position.y - enemy_unit.grid_position.y)
+		if distance < closest_distance:
+			closest_distance = distance
+			closest_unit = player_unit
+	
+	return closest_unit
+
+# Get the best position to move towards a target (within movement range)
+func get_best_move_towards_target(unit, target_pos: Vector2i) -> Vector2i:
+	var reachable_cells = GridManager.get_movement_range(unit.grid_position, unit.movement_range)
+	
+	if reachable_cells.size() == 0:
+		return unit.grid_position
+	
+	var best_pos = unit.grid_position
+	var best_distance = abs(target_pos.x - unit.grid_position.x) + abs(target_pos.y - unit.grid_position.y)
+	
+	# Find the reachable cell closest to the target
+	for cell in reachable_cells:
+		# Check if cell is occupied
+		var unit_at_cell = get_unit_at_position(cell)
+		if unit_at_cell and unit_at_cell != unit:
+			continue
+		
+		var distance = abs(target_pos.x - cell.x) + abs(target_pos.y - cell.y)
+		if distance < best_distance:
+			best_distance = distance
+			best_pos = cell
+	
+	return best_pos

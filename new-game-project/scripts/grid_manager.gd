@@ -4,6 +4,12 @@ extends Node
 # Grid configuration
 var grid_size = Vector2i(8, 8)  # Default 8x8 test grid
 var cell_size = Vector2(64, 64)  # 64 pixels per cell
+const CARDINAL_DIRECTIONS := [
+	Vector2i(0, -1),  # Up
+	Vector2i(0, 1),   # Down
+	Vector2i(-1, 0),  # Left
+	Vector2i(1, 0)    # Right
+]  # Shared directions array to avoid re-allocating every search
 var astar_grid: AStarGrid2D
 
 # Initialize the AStarGrid2D
@@ -51,8 +57,8 @@ func get_movement_range(start_pos: Vector2i, movement_range: int) -> Array:
 	
 	while queue.size() > 0:
 		var current = queue.pop_front()
-		var current_pos = current.pos
-		var current_cost = current.cost
+		var current_pos = current["pos"]
+		var current_cost = current["cost"]
 		
 		# Skip if we've already visited this position with equal or lower cost
 		if visited.has(current_pos) and visited[current_pos] <= current_cost:
@@ -65,14 +71,7 @@ func get_movement_range(start_pos: Vector2i, movement_range: int) -> Array:
 			reachable_cells.append(current_pos)
 		
 		# Check all four directions (up, down, left, right)
-		var directions = [
-			Vector2i(0, -1),  # Up
-			Vector2i(0, 1),   # Down
-			Vector2i(-1, 0),  # Left
-			Vector2i(1, 0)    # Right
-		]
-		
-		for direction in directions:
+		for direction in CARDINAL_DIRECTIONS:
 			var next_pos = current_pos + direction
 			
 			# Check if position is within grid bounds and walkable

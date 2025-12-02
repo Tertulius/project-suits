@@ -14,6 +14,7 @@ var previous_state = GameState.PLAYER_TURN
 
 signal state_changed(new_state, old_state)
 signal player_turn_started()
+signal enemy_turn_started()
 signal unit_selected(unit)
 signal unit_deselected()
 signal unit_movement_started()
@@ -43,6 +44,8 @@ func change_state(new_state: GameState, force: bool = false):
 	match new_state:
 		GameState.PLAYER_TURN:
 			player_turn_started.emit()
+		GameState.ENEMY_TURN:
+			enemy_turn_started.emit()
 		GameState.UNIT_SELECTED:
 			# This will be emitted by unit selection logic
 			pass
@@ -56,7 +59,7 @@ func is_valid_transition(from_state: GameState, to_state: GameState) -> bool:
 	var valid_transitions = {
 		GameState.PLAYER_TURN: [GameState.UNIT_SELECTED, GameState.ENEMY_TURN, GameState.ANIMATION_LOCK],
 		GameState.UNIT_SELECTED: [GameState.PLAYER_TURN, GameState.UNIT_MOVING, GameState.ANIMATION_LOCK],
-		GameState.UNIT_MOVING: [GameState.PLAYER_TURN, GameState.ANIMATION_LOCK],
+		GameState.UNIT_MOVING: [GameState.PLAYER_TURN, GameState.ENEMY_TURN, GameState.ANIMATION_LOCK],
 		GameState.ENEMY_TURN: [GameState.PLAYER_TURN, GameState.ANIMATION_LOCK],
 		GameState.ANIMATION_LOCK: [GameState.PLAYER_TURN, GameState.UNIT_SELECTED, GameState.ENEMY_TURN]
 	}
@@ -90,8 +93,16 @@ func start_unit_movement():
 
 # Finish unit movement
 func finish_unit_movement():
-	change_state(GameState.PLAYER_TURN)
 	unit_movement_finished.emit()
+	# Don't automatically return to PLAYER_TURN - let the caller decide
+
+# Start enemy turn
+func start_enemy_turn():
+	change_state(GameState.ENEMY_TURN)
+
+# Finish enemy turn
+func finish_enemy_turn():
+	change_state(GameState.PLAYER_TURN)
 
 # Start animation lock (for any short animations)
 func start_animation_lock():

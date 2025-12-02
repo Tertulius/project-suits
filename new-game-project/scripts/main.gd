@@ -63,6 +63,7 @@ func connect_signals():
 	# Connect game state signals
 	game_state.state_changed.connect(_on_game_state_changed)
 	game_state.player_turn_started.connect(_on_player_turn_started)
+	game_state.enemy_turn_started.connect(_on_enemy_turn_started)
 	game_state.unit_movement_finished.connect(_on_unit_movement_finished)
 	
 	print("All signals connected")
@@ -136,6 +137,11 @@ func _on_game_state_changed(new_state, old_state):
 		game_state.GameState.UNIT_SELECTED:
 			# Cursor remains visible
 			cursor_controller.get_parent().visible = true
+		
+		game_state.GameState.ENEMY_TURN:
+			# Hide cursor during enemy turn
+			cursor_controller.get_parent().visible = false
+			grid.clear_path()
 
 func _on_player_turn_started():
 	print("=== Player Turn Started ===")
@@ -143,7 +149,65 @@ func _on_player_turn_started():
 
 func _on_unit_movement_finished():
 	print("=== Unit Movement Finished ===")
-	print("Returning to player control")
+
+var enemy_units_moving: int = 0
+
+func _on_enemy_turn_started():
+	print("=== Enemy Turn Started ===")
+	# Move all enemy units
+	var enemy_units = unit_manager.get_units_by_team(1)  # Team 1 is enemy
+	
+	if enemy_units.size() == 0:
+		print("No enemy units found, ending enemy turn")
+		game_state.finish_enemy_turn()
+		return
+	
+	# Reset counter
+	enemy_units_moving = 0
+	var units_that_will_move = 0
+	
+	# Move each enemy unit towards the closest player unit
+	for enemy_unit in enemy_units:
+		var closest_player = unit_manager.find_closest_player_unit(enemy_unit)
+		
+		if closest_player:
+			var target_pos = unit_manager.get_best_move_towards_target(
+				enemy_unit, 
+				closest_player.grid_position
+			)
+			
+			# Only move if we found a better position
+			if target_pos != enemy_unit.grid_position:
+				# Connect to movement finished to track when all enemies are done
+				enemy_unit.movement_finished.connect(_on_enemy_unit_moved, CONNECT_ONE_SHOT)
+				unit_manager.move_unit_to(enemy_unit, target_pos)
+				units_that_will_move += 1
+			else:
+				# Unit can't move closer, skip it
+				pass
+		else:
+			# No player units found, skip
+			pass
+	
+	# If no units moved, end turn immediately
+	if units_that_will_move == 0:
+		print("No enemy units can move, ending enemy turn")
+		await get_tree().create_timer(0.3).timeout
+		game_state.finish_enemy_turn()
+	else:
+		enemy_units_moving = units_that_will_move
+
+func _on_enemy_unit_moved():
+	enemy_units_moving -= 1
+	print("Enemy unit finished moving. Remaining: ", enemy_units_moving)
+	if enemy_units_moving <= 0:
+		_on_all_enemies_moved()
+
+func _on_all_enemies_moved():
+	print("=== All Enemy Units Moved ===")
+	# Wait a brief moment then end enemy turn
+	await get_tree().create_timer(0.5).timeout
+	game_state.finish_enemy_turn()
 
 # Debug function to print current game state
 func print_game_state():
